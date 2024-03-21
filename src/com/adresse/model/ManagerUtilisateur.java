@@ -1,6 +1,8 @@
 package com.adresse.model;
 
 import java.sql.*;
+import java.util.ArrayList;
+
 public class ManagerUtilisateur {
     private static final Connection connexion = Database.getConnexion();
     public static Utilisateur create(Utilisateur user) throws SQLException {
@@ -71,6 +73,77 @@ public class ManagerUtilisateur {
         //retourne un objet utilisateur complet
         return userUpdate;
     }
+
+
+
+    public static Utilisateur delete(Utilisateur user) throws SQLException {
+        //créer un objet Utilisateur
+        Utilisateur userDelete = new Utilisateur();
+        //try la requête
+        try {
+            //connecter à la bdd
+            Statement smt = connexion.createStatement();
+            //préparation de la requête
+            String req = "DELETE from users  WHERE email = ?";
+            PreparedStatement preparedStatement = connexion.prepareStatement(req);
+            //binder les paramètres
+
+            preparedStatement.setString(1, user.getEmail());
+
+
+            //exécuter la requête
+            int row = preparedStatement.executeUpdate();
+            //tester si la requête à réussi
+            if(row > 0) {
+                userDelete.setName(user.getName());
+                userDelete.setFirstname(user.getFirstname());
+
+            }
+            //recupérer l'enregistrement
+        }
+        //lever l'erreur SQL
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+        //retourne un objet utilisateur complet
+        return userDelete;
+    }
+
+
+
+    public static ArrayList<Utilisateur> selectAll() throws SQLException{
+        ArrayList<Utilisateur> users = new ArrayList<>();
+        try {
+            //connexion à la bdd
+            Statement smt = connexion.createStatement();
+            //requête
+            String req = "SELECT id, name, firstname, email, password FROM users";
+            //préparer la requête
+            PreparedStatement preparedStatement = connexion.prepareStatement(req);
+
+            //exécuter la requête
+            ResultSet reponse = preparedStatement.executeQuery();
+            //boucle pour parcourir le résultat
+            while (reponse.next()) {
+                if(reponse.getString(1) !=null){
+                    //setter les nouvelles valeurs
+                    Utilisateur userRecup = new Utilisateur();
+                    userRecup.setId(reponse.getInt(1));
+                    userRecup.setName(reponse.getString("name"));
+                    userRecup.setFirstname(reponse.getString("firstname"));
+                    userRecup.setEmail(reponse.getString("email"));
+                    userRecup.setPassword(reponse.getString("password"));
+                    users.add(userRecup);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        //retourne l'array Utilisateur
+        return users;
+    }
+
+
 
 
     public static Utilisateur findByMail(Utilisateur user) throws SQLException{
